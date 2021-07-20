@@ -5,6 +5,7 @@ from tensorflow.keras import backend
 from tensorflow.keras import models
 from tensorflow.keras import utils
 
+
 def fused_mb_conv_block(inputs, block_args: BlockArgs, activation='swish', drop_rate=None, prefix='', conv_dropout=None):
     """Fused Mobile Inverted Residual Bottleneck"""
     has_se = (block_args.se_ratio is not None) and (0 < block_args.se_ratio <= 1)
@@ -29,13 +30,40 @@ def fused_mb_conv_block(inputs, block_args: BlockArgs, activation='swish', drop_
                           padding='same',
                           use_bias=False,
                           name=f'{prefix}expand_conv')(x)
-        x = layers.BatchNormalization(name=f'{prefix}expand_bn')(x)
+        x = layers.BatchNormalization(axis=bn_axis, name=f'{prefix}expand_bn')(x)
         x = layers.Activation(activation=activation, name=f'{prefix}_expand_activation')(x)
     if conv_dropout and block_args.expand_ratio > 1:
         x = layers.Dropout(conv_dropout)(x)
 
     if has_se:
-        pass
+        num_reduced_filters = max(1, int(
+            block_args.input_filters * block_args.se_ratio
+        ))
+        se_tensor = layers.GlobalAveragePooling2D(name=prefix + 'se_squeeze')(x)
+
+        target_shape = (1, 1, filters) if backend.image_data_format() == 'channels_last' else (filters, 1, 1)
+        se_tensor = layers.Reshape(target_shape, name=prefix + 'se_reshape')(se_tensor)
+        se_tensor = layers.Conv2D(num_reduced_filters, 1,
+                                  activation=activation,
+                                  padding='same',
+                                  use_bias=True,
+                                  kernel_initializer=CONV_KERNEL_INITIALIZER,
+                                  name=prefix + 'se_reduce')(se_tensor)
+        se_tensor = layers.Conv2D(filters, 1,
+                                  activation='sigmoid',
+                                  padding='same',
+                                  use_bias=True,
+                                  kernel_initializer=CONV_KERNEL_INITIALIZER,
+                                  name=prefix + 'se_expand')(se_tensor)
+        if backend.backend() == 'theano':
+            # For the Theano backend, we have to explicitly make
+            # the excitation weights broadcastable.
+            pattern = ([True, True, True, False] if backend.image_data_format() == 'channels_last'
+                       else [True, False, True, True])
+            se_tensor = layers.Lambda(
+                lambda x: backend.pattern_broadcast(x, pattern),
+                name=prefix + 'se_broadcast')(se_tensor)
+        x = layers.multiply([x, se_tensor], name=prefix + 'se_excite')
 
     # Output phase
     x = layers.Conv2D(block_args.output_filters,
@@ -46,7 +74,7 @@ def fused_mb_conv_block(inputs, block_args: BlockArgs, activation='swish', drop_
                       use_bias=False,
                       name=f'{prefix}project_conv')(x)
 
-    x = layers.BatchNormalization(name=f'{prefix}project_bn')(x)
+    x = layers.BatchNormalization(axis=bn_axis, name=f'{prefix}project_bn')(x)
     if block_args.expand_ratio == 1:
         x = layers.Activation(activation=activation, name=f'{prefix}activation')(x)
 
