@@ -1,9 +1,10 @@
 from config import *
-from efficientnet.model import mb_conv_block, round_filters, CONV_KERNEL_INITIALIZER, get_dropout
+from efficientnet.model import mb_conv_block, round_filters, get_dropout, round_repeats
+from efficientnet.model import CONV_KERNEL_INITIALIZER, DENSE_KERNEL_INITIALIZER
 from tensorflow.keras import layers
 from tensorflow.keras import backend
 from tensorflow.keras import models
-from tensorflow.keras import utils
+from tensorflow.keras import utils as keras_utils
 
 
 def fused_mb_conv_block(inputs, block_args: BlockArgs, activation='swish', drop_rate=None, prefix='', conv_dropout=None):
@@ -15,7 +16,7 @@ def fused_mb_conv_block(inputs, block_args: BlockArgs, activation='swish', drop_
         backend=backend,
         layers=layers,
         models=models,
-        utils=utils
+        utils=keras_utils
     )
 
     x = inputs
@@ -88,7 +89,7 @@ def fused_mb_conv_block(inputs, block_args: BlockArgs, activation='swish', drop_
     return x
 
 
-def EfficientNetV2(block_args,
+def EfficientNetV2(blocks_args,
                    width_coefficient,
                    depth_coefficient,
                    default_resolution,
@@ -104,7 +105,7 @@ def EfficientNetV2(block_args,
                    classes=1000,
                    **kwargs):
 
-    assert isinstance(block_args, list) and False not in [isinstance(bkg_arg, BlockArgs) for bkg_arg in block_args]
+    assert isinstance(blocks_args, list) and False not in [isinstance(block_args, BlockArgs) for block_args in blocks_args]
 
     if input_tensor is None:
         img_input = layers.Input(shape=input_shape)
@@ -114,7 +115,7 @@ def EfficientNetV2(block_args,
     # build stem layer
     x = img_input
 
-    x = layers.Conv2D(round_filters(block_args[0].input_filters, width_coefficient, depth_divisor), 3,
+    x = layers.Conv2D(round_filters(blocks_args[0].input_filters, width_coefficient, depth_divisor), 3,
                       strides=2,
                       kernel_initializer=CONV_KERNEL_INITIALIZER,
                       padding='same',
@@ -123,6 +124,54 @@ def EfficientNetV2(block_args,
     x = layers.Activation(activation=activation)(x)
 
     # build blocks
+    for idx, block_args in enumerate(blocks_args):
+        assert isinstance(block_args, BlockArgs)
+        assert block_args.num_repeat > 0
+        input_filters = round_filters(block_args.input_filters,
+                                      width_coefficient,
+                                      depth_divisor)
+        output_filters = round_filters(block_args.output_filters,
+                                       width_coefficient,
+                                       depth_divisor)
+        repeats = round_repeats(block_args.num_repeat, depth_coefficient)
+
+        block_args._replace(
+            input_filters=input_filters,
+            output_filters=output_filters,
+            num_repeat=repeats
+        )
+
+    # build head
+    x = layers.Conv2D(
+        filters=round_filters(1280, width_coefficient, depth_divisor),
+        kernel_size=1,
+        strides=1,
+        kernel_initializer=CONV_KERNEL_INITIALIZER,
+        padding='same',
+        use_bias=False,
+        name='head_conv')(x)
+    x = layers.BatchNormalization(name='head_bn')(x)
+    x = layers.Activation(activation=activation, name='head_activation')(x)
+    if pooling == 'avg':
+        x = layers.GlobalAveragePooling2D(name='head_avg_pool')(x)
+    elif pooling == 'max':
+        x = layers.GlobalMaxPooling2D(name='head_max_pool')(x)
+    if dropout_rate and dropout_rate > 0:
+        x = layers.Dropout(dropout_rate, name='head_dropout')(x)
+
+    if include_top:
+        x = layers.Dense(classes,
+                         activation='softmax',
+                         kernel_initializer=DENSE_KERNEL_INITIALIZER,
+                         name='probs')(x)
+
+    inputs = img_input if input_tensor is None else keras_utils.get_source_inputs(input_tensor)
+
+    model = models.Model(inputs, x, name=model_name)
+
+    if weights:
+        model.load_weights(weights)
+    return model
 
 
 def EfficientNetV2_Base(include_top=True,
