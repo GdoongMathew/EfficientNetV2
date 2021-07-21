@@ -1,5 +1,7 @@
+import string
+
 from config import *
-from efficientnet.model import mb_conv_block, round_filters, get_dropout, round_repeats
+from efficientnet.model import round_filters, get_dropout, round_repeats
 from efficientnet.model import CONV_KERNEL_INITIALIZER, DENSE_KERNEL_INITIALIZER
 from tensorflow.keras import layers
 from tensorflow.keras import backend
@@ -7,8 +9,15 @@ from tensorflow.keras import models
 from tensorflow.keras import utils as keras_utils
 
 
-def fused_mb_conv_block(inputs, block_args: BlockArgs, activation='swish', drop_rate=None, prefix='', conv_dropout=None):
+def mb_conv_block(inputs,
+                  block_args: BlockArgs,
+                  activation='swish',
+                  drop_rate=None,
+                  prefix='',
+                  conv_dropout=None,
+                  mb_type='normal'):
     """Fused Mobile Inverted Residual Bottleneck"""
+    assert mb_type in ['normal', 'fused']
     has_se = (block_args.se_ratio is not None) and (0 < block_args.se_ratio <= 1)
     bn_axis = 3 if backend.image_data_format() == 'channels_last' else 1
 
@@ -33,6 +42,17 @@ def fused_mb_conv_block(inputs, block_args: BlockArgs, activation='swish', drop_
                           name=f'{prefix}expand_conv')(x)
         x = layers.BatchNormalization(axis=bn_axis, name=f'{prefix}expand_bn')(x)
         x = layers.Activation(activation=activation, name=f'{prefix}_expand_activation')(x)
+
+    if mb_type is 'normal':
+        x = layers.DepthwiseConv2D(block_args.kernel_size,
+                                   block_args.strides,
+                                   depthwise_initializer=CONV_KERNEL_INITIALIZER,
+                                   padding='same',
+                                   use_bias=False,
+                                   name=f'{prefix}dwconv')(x)
+        x = layers.BatchNormalization(name=f'{prefix}bn')(x)
+        x = layers.Activation(activation=activation, name=f'{prefix}activation')(x)
+
     if conv_dropout and block_args.expand_ratio > 1:
         x = layers.Dropout(conv_dropout)(x)
 
@@ -123,6 +143,14 @@ def EfficientNetV2(blocks_args,
     x = layers.BatchNormalization(name='stem_bn')(x)
     x = layers.Activation(activation=activation)(x)
 
+    mb_type = {
+        0: 'normal',
+        1: 'fused'
+    }
+
+    num_blocks_total = sum(block_args.num_repeat for block_args in blocks_args)
+    block_num = 0
+
     # build blocks
     for idx, block_args in enumerate(blocks_args):
         assert isinstance(block_args, BlockArgs)
@@ -135,11 +163,34 @@ def EfficientNetV2(blocks_args,
                                        depth_divisor)
         repeats = round_repeats(block_args.num_repeat, depth_coefficient)
 
-        block_args._replace(
+        block_args = block_args._replace(
             input_filters=input_filters,
             output_filters=output_filters,
             num_repeat=repeats
         )
+        drop_rate = dropout_rate * float(block_num) / num_blocks_total
+
+        conv_type = mb_type[block_args.conv_type]
+        x = mb_conv_block(x, block_args,
+                          activation=activation,
+                          drop_rate=drop_rate,
+                          mb_type=conv_type,
+                          prefix=f'block{idx + 1}a_')
+        block_num += 1
+        if block_args.num_repeat > 1:
+            block_args = block_args._replace(
+                input_filters=block_args.output_filters,
+                strides=[1, 1]
+            )
+            for _idx in range(block_args.num_repeat - 1):
+                drop_rate = dropout_rate * float(block_num) / num_blocks_total
+                block_prefix = f'block{idx + 1}{string.ascii_lowercase[_idx + 1]}_'
+                x = mb_conv_block(x, block_args,
+                                  activation=activation,
+                                  drop_rate=drop_rate,
+                                  mb_type=conv_type,
+                                  prefix=block_prefix)
+                block_num += 1
 
     # build head
     x = layers.Conv2D(
