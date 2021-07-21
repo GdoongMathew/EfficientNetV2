@@ -50,7 +50,7 @@ def mb_conv_block(inputs,
                                    padding='same',
                                    use_bias=False,
                                    name=f'{prefix}dwconv')(x)
-        x = layers.BatchNormalization(name=f'{prefix}bn')(x)
+        x = layers.BatchNormalization(axis=bn_axis, name=f'{prefix}bn')(x)
         x = layers.Activation(activation=activation, name=f'{prefix}activation')(x)
 
     if conv_dropout and block_args.expand_ratio > 1:
@@ -130,7 +130,16 @@ def EfficientNetV2(blocks_args,
     if input_tensor is None:
         img_input = layers.Input(shape=input_shape)
     else:
-        img_input = input_tensor
+        if backend.backend() == 'tensorflow':
+            from tensorflow.keras.backend import is_keras_tensor
+        else:
+            is_keras_tensor = backend.is_keras_tensor
+        if not is_keras_tensor(input_tensor):
+            img_input = layers.Input(tensor=input_tensor, shape=input_shape)
+        else:
+            img_input = input_tensor
+
+    bn_axis = 3 if backend.image_data_format() == 'channels_last' else 1
 
     # build stem layer
     x = img_input
@@ -140,7 +149,7 @@ def EfficientNetV2(blocks_args,
                       kernel_initializer=CONV_KERNEL_INITIALIZER,
                       padding='same',
                       name='stem_conv')(x)
-    x = layers.BatchNormalization(name='stem_bn')(x)
+    x = layers.BatchNormalization(axis=bn_axis, name='stem_bn')(x)
     x = layers.Activation(activation=activation)(x)
 
     mb_type = {
@@ -201,7 +210,7 @@ def EfficientNetV2(blocks_args,
         padding='same',
         use_bias=False,
         name='head_conv')(x)
-    x = layers.BatchNormalization(name='head_bn')(x)
+    x = layers.BatchNormalization(axis=bn_axis, name='head_bn')(x)
     x = layers.Activation(activation=activation, name='head_activation')(x)
     if pooling == 'avg':
         x = layers.GlobalAveragePooling2D(name='head_avg_pool')(x)
