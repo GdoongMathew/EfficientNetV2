@@ -34,6 +34,7 @@ def get_dropout():
     Issue:
         https://github.com/tensorflow/tensorflow/issues/30946
     """
+
     class FixedDropout(layers.Dropout):
         def _get_noise_shape(self, inputs):
             if self.noise_shape is None:
@@ -149,10 +150,33 @@ def EfficientNetV2(blocks_args,
                    pooling=None,
                    classes=1000,
                    **kwargs):
+    """
+    Create an EfficientNetV2 model using given inputs.
+    Will reload pretrained weights if provided.
+    :param blocks_args: a list of BlockArgs objects, specifying model's configuration.
+    :param width_coefficient: float, width scaling coefficient.
+    :param depth_coefficient: float, depth scaling coefficient.
+    :param default_resolution: integer, default input size.
+    :param dropout_rate: float, dropout rate
+    :param depth_divisor: int.
+    :param model_name: string, model name.
+    :param include_top: bool, whether to add the final classification layers.
+    :param weights: string or None.
+    :param input_tensor: (optional) tensorflow keras tensor, used as the inputs if given.
+    :param input_shape: (optional) input shape.
+    :param activation: string, activation type, default to `swish`
+    :param pooling: (optional) pooling mode in feature extraction.
+        - `avg`: global average pooling.
+        - `max`: global maximum pooling.
+    :param classes: (optional) number of classes to in the final output.
+    :param kwargs:
+    :return: tf.keras Model instance.
+    """
 
-    assert isinstance(blocks_args, list) and False not in [isinstance(block_args, BlockArgs) for block_args in blocks_args]
+    assert isinstance(blocks_args, list) and False not in [isinstance(block_args, BlockArgs) for block_args in
+                                                           blocks_args]
 
-    input_shape = default_resolution if input_shape is None else input_shape
+    input_shape = (default_resolution, default_resolution, 3) if input_shape is None else input_shape
 
     if input_tensor is None:
         img_input = layers.Input(shape=input_shape)
@@ -376,3 +400,10 @@ def EfficientNetV2_XL(include_top=True,
         classes=classes,
         **kwargs
     )
+
+
+setattr(EfficientNetV2_Base, '__doc__', EfficientNetV2.__doc__)
+setattr(EfficientNetV2_S, '__doc__', EfficientNetV2.__doc__)
+setattr(EfficientNetV2_M, '__doc__', EfficientNetV2.__doc__)
+setattr(EfficientNetV2_L, '__doc__', EfficientNetV2.__doc__)
+setattr(EfficientNetV2_XL, '__doc__', EfficientNetV2.__doc__)
