@@ -49,7 +49,7 @@ V2_M_BLOCKS_ARGS = [
               expand_ratio=4, id_skip=True, strides=[2, 2], se_ratio=0.25, conv_type=0),
     BlockArgs(kernel_size=3, num_repeat=14, input_filters=160, output_filters=176,
               expand_ratio=6, id_skip=True, strides=[1, 1], se_ratio=0.25, conv_type=0),
-    BlockArgs(kernel_size=3, num_repeat=18, input_filters=176, output_filters=384,
+    BlockArgs(kernel_size=3, num_repeat=18, input_filters=176, output_filters=304,
               expand_ratio=6, id_skip=True, strides=[2, 2], se_ratio=0.25, conv_type=0),
     BlockArgs(kernel_size=3, num_repeat=5, input_filters=304, output_filters=512,
               expand_ratio=6, id_skip=True, strides=[1, 1], se_ratio=0.25, conv_type=0),

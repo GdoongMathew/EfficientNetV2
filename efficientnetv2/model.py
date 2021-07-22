@@ -363,10 +363,10 @@ def EfficientNetV2_XL(include_top=True,
                       **kwargs
                       ):
     return EfficientNetV2(
-        V2_L_BLOCKS_ARGS,
+        V2_XL_BLOCKS_ARGS,
         1., 1., 384,
         dropout_rate=0.4,
-        model_name='efficientnetv2_l',
+        model_name='efficientnetv2_xl',
         include_top=include_top,
         weights=weights,
         input_tensor=input_tensor,
