@@ -213,7 +213,9 @@ def EfficientNetV2(blocks_args,
             )
             for _idx in range(block_args.num_repeat - 1):
                 drop_rate = dropout_rate * float(block_num) / num_blocks_total
-                block_prefix = f'block{idx + 1}{string.ascii_lowercase[_idx + 1]}_'
+                block_prefix = f'block{idx + 1}{string.ascii_lowercase[_idx + 1]}_' if \
+                    _idx + 1 < len(string.ascii_lowercase) else \
+                    f'block{idx + 1}{string.ascii_uppercase[_idx + 1 - len(string.ascii_lowercase)]}_'
                 x = mb_conv_block(x, block_args,
                                   activation=activation,
                                   drop_rate=drop_rate,
@@ -234,7 +236,7 @@ def EfficientNetV2(blocks_args,
     x = layers.Activation(activation=activation, name='head_activation')(x)
     if pooling == 'avg':
         x = layers.GlobalAveragePooling2D(name='head_avg_pool')(x)
-    elif pooling == 'max':
+    else:
         x = layers.GlobalMaxPooling2D(name='head_max_pool')(x)
     if dropout_rate and dropout_rate > 0:
         x = layers.Dropout(dropout_rate, name='head_dropout')(x)
