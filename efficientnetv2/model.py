@@ -1,12 +1,38 @@
 import string
 
-from config import *
-from efficientnet.model import round_filters, get_dropout, round_repeats
-from efficientnet.model import CONV_KERNEL_INITIALIZER, DENSE_KERNEL_INITIALIZER
 from tensorflow.keras import layers
 from tensorflow.keras import backend
 from tensorflow.keras import models
 from tensorflow.keras import utils as keras_utils
+
+from keras_applications.imagenet_utils import _obtain_input_shape
+
+from .utils import CONV_KERNEL_INITIALIZER
+from .utils import DENSE_KERNEL_INITIALIZER
+from .utils import round_filters
+from .utils import round_repeats
+from .config import *
+
+
+def get_dropout():
+    """Wrapper over custom dropout. Fix problem of ``None`` shape for tf.keras.
+    It is not possible to define FixedDropout class as global object,
+    because we do not have modules for inheritance at first time.
+
+    Issue:
+        https://github.com/tensorflow/tensorflow/issues/30946
+    """
+    class FixedDropout(layers.Dropout):
+        def _get_noise_shape(self, inputs):
+            if self.noise_shape is None:
+                return self.noise_shape
+
+            symbolic_shape = backend.shape(inputs)
+            noise_shape = [symbolic_shape[axis] if shape is None else shape
+                           for axis, shape in enumerate(self.noise_shape)]
+            return tuple(noise_shape)
+
+    return FixedDropout
 
 
 def mb_conv_block(inputs,
@@ -21,12 +47,7 @@ def mb_conv_block(inputs,
     has_se = (block_args.se_ratio is not None) and (0 < block_args.se_ratio <= 1)
     bn_axis = 3 if backend.image_data_format() == 'channels_last' else 1
 
-    Dropout = get_dropout(
-        backend=backend,
-        layers=layers,
-        models=models,
-        utils=keras_utils
-    )
+    Dropout = get_dropout()
 
     x = inputs
 
@@ -126,6 +147,13 @@ def EfficientNetV2(blocks_args,
                    **kwargs):
 
     assert isinstance(blocks_args, list) and False not in [isinstance(block_args, BlockArgs) for block_args in blocks_args]
+
+    input_shape = _obtain_input_shape(input_shape,
+                                      default_size=default_resolution,
+                                      min_size=32,
+                                      data_format=backend.image_data_format(),
+                                      require_flatten=include_top,
+                                      weights=weights)
 
     if input_tensor is None:
         img_input = layers.Input(shape=input_shape)
