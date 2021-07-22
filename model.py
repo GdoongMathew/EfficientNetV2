@@ -34,8 +34,8 @@ def mb_conv_block(inputs,
     filters = block_args.input_filters * block_args.expand_ratio
     if block_args.expand_ratio != 1:
         x = layers.Conv2D(filters,
-                          block_args.kernel_size,
-                          strides=block_args.strides,
+                          1 if mb_type == 'normal' else block_args.kernel_size,
+                          strides=1 if mb_type == 'normal' else block_args.strides,
                           kernel_initializer=CONV_KERNEL_INITIALIZER,
                           padding='same',
                           use_bias=False,
