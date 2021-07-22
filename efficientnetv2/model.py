@@ -62,7 +62,7 @@ def mb_conv_block(inputs,
                           use_bias=False,
                           name=f'{prefix}expand_conv')(x)
         x = layers.BatchNormalization(axis=bn_axis, name=f'{prefix}expand_bn')(x)
-        x = layers.Activation(activation=activation, name=f'{prefix}_expand_activation')(x)
+        x = layers.Activation(activation=activation, name=f'{prefix}expand_activation')(x)
 
     if mb_type is 'normal':
         x = layers.DepthwiseConv2D(block_args.kernel_size,
