@@ -20,4 +20,9 @@ model.load_weights('path_to_model.h5')
 
 ## Installation
 ___
+### Requirements
 * TensorFlow >= 2.4
+### From source
+```bash
+pip install -U git+https://github.com/GdoongMathew/EfficientNetV2
+```
