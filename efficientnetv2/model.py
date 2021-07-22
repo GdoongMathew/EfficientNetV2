@@ -5,8 +5,6 @@ from tensorflow.keras import backend
 from tensorflow.keras import models
 from tensorflow.keras import utils as keras_utils
 
-from keras_applications.imagenet_utils import _obtain_input_shape
-
 from .utils import CONV_KERNEL_INITIALIZER
 from .utils import DENSE_KERNEL_INITIALIZER
 from .utils import round_filters
@@ -140,12 +138,7 @@ def EfficientNetV2(blocks_args,
 
     assert isinstance(blocks_args, list) and False not in [isinstance(block_args, BlockArgs) for block_args in blocks_args]
 
-    input_shape = _obtain_input_shape(input_shape,
-                                      default_size=default_resolution,
-                                      min_size=32,
-                                      data_format=backend.image_data_format(),
-                                      require_flatten=include_top,
-                                      weights=weights)
+    input_shape = default_resolution if input_shape is None else input_shape
 
     if input_tensor is None:
         img_input = layers.Input(shape=input_shape)
