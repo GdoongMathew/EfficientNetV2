@@ -148,6 +148,7 @@ def EfficientNetV2(blocks_args,
                    input_shape=None,
                    activation='swish',
                    pooling=None,
+                   final_drop_rate=None,
                    classes=1000,
                    **kwargs):
     """
@@ -168,6 +169,7 @@ def EfficientNetV2(blocks_args,
     :param pooling: (optional) pooling mode in feature extraction.
         - `avg`: global average pooling.
         - `max`: global maximum pooling.
+    :param final_drop_rate: dropout rate before the final output layer if include_top is set to True
     :param classes: (optional) number of classes to in the final output.
     :param kwargs:
     :return: tf.keras Model instance.
@@ -270,10 +272,10 @@ def EfficientNetV2(blocks_args,
         x = layers.GlobalAveragePooling2D(name='head_avg_pool')(x)
     else:
         x = layers.GlobalMaxPooling2D(name='head_max_pool')(x)
-    if dropout_rate and dropout_rate > 0:
-        x = layers.Dropout(dropout_rate, name='head_dropout')(x)
 
     if include_top:
+        if final_drop_rate and final_drop_rate > 0:
+            x = layers.Dropout(final_drop_rate, name='head_dropout')(x)
         x = layers.Dense(classes,
                          activation='softmax',
                          kernel_initializer=DENSE_KERNEL_INITIALIZER,
