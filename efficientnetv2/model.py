@@ -147,7 +147,7 @@ def EfficientNetV2(blocks_args,
                    input_tensor=None,
                    input_shape=None,
                    activation='swish',
-                   pooling=None,
+                   pooling='avg',
                    final_drop_rate=None,
                    classes=1000,
                    **kwargs):
@@ -177,6 +177,7 @@ def EfficientNetV2(blocks_args,
 
     assert isinstance(blocks_args, list) and False not in [isinstance(block_args, BlockArgs) for block_args in
                                                            blocks_args]
+    assert pooling in ['avg', 'max']
 
     input_shape = (default_resolution, default_resolution, 3) if input_shape is None else input_shape
 
@@ -294,7 +295,6 @@ def EfficientNetV2_Base(include_top=True,
                         weights='imagenet',
                         input_tensor=None,
                         input_shape=None,
-                        pooling=None,
                         classes=1000,
                         **kwargs
                         ):
@@ -307,7 +307,6 @@ def EfficientNetV2_Base(include_top=True,
         weights=weights,
         input_tensor=input_tensor,
         input_shape=input_shape,
-        pooling=pooling,
         classes=classes,
         **kwargs
     )
@@ -317,7 +316,6 @@ def EfficientNetV2_S(include_top=True,
                      weights='imagenet',
                      input_tensor=None,
                      input_shape=None,
-                     pooling=None,
                      classes=1000,
                      **kwargs
                      ):
@@ -330,7 +328,6 @@ def EfficientNetV2_S(include_top=True,
         weights=weights,
         input_tensor=input_tensor,
         input_shape=input_shape,
-        pooling=pooling,
         classes=classes,
         **kwargs
     )
@@ -340,7 +337,6 @@ def EfficientNetV2_M(include_top=True,
                      weights='imagenet',
                      input_tensor=None,
                      input_shape=None,
-                     pooling=None,
                      classes=1000,
                      **kwargs
                      ):
@@ -353,7 +349,6 @@ def EfficientNetV2_M(include_top=True,
         weights=weights,
         input_tensor=input_tensor,
         input_shape=input_shape,
-        pooling=pooling,
         classes=classes,
         **kwargs
     )
@@ -363,7 +358,6 @@ def EfficientNetV2_L(include_top=True,
                      weights='imagenet',
                      input_tensor=None,
                      input_shape=None,
-                     pooling=None,
                      classes=1000,
                      **kwargs
                      ):
@@ -376,7 +370,6 @@ def EfficientNetV2_L(include_top=True,
         weights=weights,
         input_tensor=input_tensor,
         input_shape=input_shape,
-        pooling=pooling,
         classes=classes,
         **kwargs
     )
@@ -386,7 +379,6 @@ def EfficientNetV2_XL(include_top=True,
                       weights='imagenet',
                       input_tensor=None,
                       input_shape=None,
-                      pooling=None,
                       classes=1000,
                       **kwargs
                       ):
@@ -399,7 +391,6 @@ def EfficientNetV2_XL(include_top=True,
         weights=weights,
         input_tensor=input_tensor,
         input_shape=input_shape,
-        pooling=pooling,
         classes=classes,
         **kwargs
     )
