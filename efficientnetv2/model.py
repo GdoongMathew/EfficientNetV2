@@ -198,6 +198,7 @@ def EfficientNetV2(blocks_args,
     x = layers.Conv2D(round_filters(blocks_args[0].input_filters, width_coefficient, depth_divisor), 3,
                       strides=2,
                       kernel_initializer=CONV_KERNEL_INITIALIZER,
+                      use_bias=False,
                       padding='same',
                       name='stem_conv')(x)
     x = layers.BatchNormalization(axis=bn_axis, name='stem_bn')(x)
