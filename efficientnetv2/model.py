@@ -238,7 +238,7 @@ def EfficientNetV2(blocks_args,
                           activation=activation,
                           drop_rate=drop_rate,
                           mb_type=conv_type,
-                          prefix=f'block{idx + 1}a_')
+                          prefix=f'{conv_type}_block{idx + 1}a_')
         block_num += 1
         if block_args.num_repeat > 1:
             block_args = block_args._replace(
@@ -247,9 +247,9 @@ def EfficientNetV2(blocks_args,
             )
             for _idx in range(block_args.num_repeat - 1):
                 drop_rate = dropout_rate * float(block_num) / num_blocks_total
-                block_prefix = f'block{idx + 1}{string.ascii_lowercase[_idx + 1]}_' if \
+                block_prefix = f'{conv_type}_block{idx + 1}{string.ascii_lowercase[_idx + 1]}_' if \
                     _idx + 1 < len(string.ascii_lowercase) else \
-                    f'block{idx + 1}{string.ascii_uppercase[_idx + 1 - len(string.ascii_lowercase)]}_'
+                    f'{conv_type}_block{idx + 1}{string.ascii_uppercase[_idx + 1 - len(string.ascii_lowercase)]}_'
                 x = mb_conv_block(x, block_args,
                                   activation=activation,
                                   drop_rate=drop_rate,
