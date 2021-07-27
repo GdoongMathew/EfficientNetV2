@@ -269,18 +269,20 @@ def EfficientNetV2(blocks_args,
         name='head_conv')(x)
     x = layers.BatchNormalization(axis=bn_axis, name='head_bn')(x)
     x = layers.Activation(activation=activation, name='head_activation')(x)
-    if pooling == 'avg':
-        x = layers.GlobalAveragePooling2D(name='head_avg_pool')(x)
-    else:
-        x = layers.GlobalMaxPooling2D(name='head_max_pool')(x)
 
     if include_top:
+        x = layers.GlobalAveragePooling2D(name='head_avg_pool')(x)
         if final_drop_rate and final_drop_rate > 0:
             x = layers.Dropout(final_drop_rate, name='head_dropout')(x)
         x = layers.Dense(classes,
                          activation='softmax',
                          kernel_initializer=DENSE_KERNEL_INITIALIZER,
                          name='probs')(x)
+    else:
+        if pooling == 'avg':
+            x = layers.GlobalAveragePooling2D(name='head_avg_pool')(x)
+        elif pooling == 'max':
+            x = layers.GlobalMaxPooling2D(name='head_max_pool')(x)
 
     inputs = img_input if input_tensor is None else keras_utils.get_source_inputs(input_tensor)
 
