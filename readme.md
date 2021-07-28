@@ -1,14 +1,7 @@
 # EfficientNetV2 in TensorFlow
 This repo is a reimplementation of EfficientNet V2. The code base is heavily inspired by [TensorFlow implementation](https://github.com/google/automl/tree/master/efficientnetv2) and [EfficientNet Keras](https://github.com/qubvel/efficientnet) 
 <img src="https://raw.githubusercontent.com/google/automl/master/efficientnetv2/g3doc/param_flops.png">
-## Examples
-___
-* Start the model and reload weights
-```python
-from efficientnetv2 import EfficientNetV2_L
-model = EfficientNetV2_L(input_shape=(512, 512, 3), weights=None)
-model.load_weights('path_to_model.h5')
-```
+
 ## Architectures
 |Model|params|ImageNet Acc|CIFAR-10|
 |---|:---:|:---:|:---:|
@@ -26,6 +19,19 @@ Ported from automl efficientnetv2 imagenet21k pretrained weights
 |EfficientNetV2_M|[h5](https://github.com/GdoongMathew/EfficientNetV2/releases/download/v0.0.1/efficientnetv2-m_imagenet.h5)|[h5](https://github.com/GdoongMathew/EfficientNetV2/releases/download/v0.0.1/efficientnetv2-m_imagenet21k.h5)|[h5](https://github.com/GdoongMathew/EfficientNetV2/releases/download/v0.0.1/efficientnetv2-m_imagenet21k-ft1k.h5)|
 |EfficientNetV2_L|[h5](https://github.com/GdoongMathew/EfficientNetV2/releases/download/v0.0.1/efficientnetv2-l_imagenet.h5)|[h5](https://github.com/GdoongMathew/EfficientNetV2/releases/download/v0.0.1/efficientnetv2-l_imagenet21k.h5)|[h5](https://github.com/GdoongMathew/EfficientNetV2/releases/download/v0.0.1/efficientnetv2-l_imagenet21k-ft1k.h5)|
 |EfficientNetV2_XL|-|[h5](https://github.com/GdoongMathew/EfficientNetV2/releases/download/v0.0.1/efficientnetv2-xl_imagenet21k.h5)|[h5](https://github.com/GdoongMathew/EfficientNetV2/releases/download/v0.0.1/efficientnetv2-xl_imagenet21k-ft1k.h5)|
+## Examples
+___
+* Start the model and reload weights
+```python
+from efficientnetv2 import EfficientNetV2_L
+model = EfficientNetV2_L(input_shape=(512, 512, 3), weights=None)
+model.load_weights('path_to_model.h5')
+```
+* Reloading pretrained ImageNet21K weight
+```python
+from efficientnetv2 import EfficientNetV2_S
+model = EfficientNetV2_S(weights='imagenet21k-ft1k')
+```
 ## Installation
 ___
 ### Requirements
