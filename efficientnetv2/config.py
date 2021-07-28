@@ -47,7 +47,7 @@ V2_S_BLOCKS_ARGS = [
               expand_ratio=4, id_skip=True, strides=[2, 2], se_ratio=None, conv_type=1),
     BlockArgs(kernel_size=3, num_repeat=6, input_filters=64, output_filters=128,
               expand_ratio=4, id_skip=True, strides=[2, 2], se_ratio=0.25, conv_type=0),
-    BlockArgs(kernel_size=3, num_repeat=9, input_filters=112, output_filters=160,
+    BlockArgs(kernel_size=3, num_repeat=9, input_filters=128, output_filters=160,
               expand_ratio=6, id_skip=True, strides=[1, 1], se_ratio=0.25, conv_type=0),
     BlockArgs(kernel_size=3, num_repeat=15, input_filters=160, output_filters=256,
               expand_ratio=6, id_skip=True, strides=[2, 2], se_ratio=0.25, conv_type=0),
