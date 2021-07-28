@@ -205,7 +205,7 @@ def EfficientNetV2(blocks_args,
                       padding='same',
                       name='stem_conv')(x)
     x = layers.BatchNormalization(axis=bn_axis, name='stem_bn')(x)
-    x = layers.Activation(activation=activation)(x)
+    x = layers.Activation(activation=activation, name='stem_activation')(x)
 
     mb_type = {
         0: 'normal',
