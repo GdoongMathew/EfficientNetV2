@@ -17,7 +17,15 @@ model.load_weights('path_to_model.h5')
 |EfficientNetV2_M|54M|85.1|99.0|
 |EfficientNetV2_L|120M|85.7|99.1|
 |EfficientNetV2_XL (21K)|208M|87.3|-|
+## Pretrained EfficientNetV2 Weights
+Ported from automl efficientnetv2 imagenet21k pretrained weights
 
+|Arch|imagenet|imagenet21k|imagenet21k-ft1k|
+|---|:---:|:---:|:---:|
+|EfficientNetV2_S|[h5](https://github.com/GdoongMathew/EfficientNetV2/releases/download/v0.0.1/efficientnetv2-s_imagenet.h5)|[h5](https://github.com/GdoongMathew/EfficientNetV2/releases/download/v0.0.1/efficientnetv2-s_imagenet21k.h5)|[h5](https://github.com/GdoongMathew/EfficientNetV2/releases/download/v0.0.1/efficientnetv2-s_imagenet21k-ft1k.h5)|
+|EfficientNetV2_M|[h5](https://github.com/GdoongMathew/EfficientNetV2/releases/download/v0.0.1/efficientnetv2-m_imagenet.h5)|[h5](https://github.com/GdoongMathew/EfficientNetV2/releases/download/v0.0.1/efficientnetv2-m_imagenet21k.h5)|[h5](https://github.com/GdoongMathew/EfficientNetV2/releases/download/v0.0.1/efficientnetv2-m_imagenet21k-ft1k.h5)|
+|EfficientNetV2_L|[h5](https://github.com/GdoongMathew/EfficientNetV2/releases/download/v0.0.1/efficientnetv2-l_imagenet.h5)|[h5](https://github.com/GdoongMathew/EfficientNetV2/releases/download/v0.0.1/efficientnetv2-l_imagenet21k.h5)|[h5](https://github.com/GdoongMathew/EfficientNetV2/releases/download/v0.0.1/efficientnetv2-l_imagenet21k-ft1k.h5)|
+|EfficientNetV2_XL|-|[h5](https://github.com/GdoongMathew/EfficientNetV2/releases/download/v0.0.1/efficientnetv2-xl_imagenet21k.h5)|[h5](https://github.com/GdoongMathew/EfficientNetV2/releases/download/v0.0.1/efficientnetv2-xl_imagenet21k-ft1k.h5)|
 ## Installation
 ___
 ### Requirements
