@@ -25,6 +25,8 @@ from .utils import round_filters
 from .utils import round_repeats
 from .config import *
 
+from .weights import IMAGENET_WEIGHTS_URL, WEIGHTS_MAP
+
 
 def get_dropout():
     """Wrapper over custom dropout. Fix problem of ``None`` shape for tf.keras.
@@ -139,6 +141,7 @@ def EfficientNetV2(blocks_args,
                    width_coefficient,
                    depth_coefficient,
                    default_resolution,
+                   arch,
                    dropout_rate=0.2,
                    depth_divisor=8,
                    model_name='efficientnetv2',
@@ -158,6 +161,7 @@ def EfficientNetV2(blocks_args,
     :param width_coefficient: float, width scaling coefficient.
     :param depth_coefficient: float, depth scaling coefficient.
     :param default_resolution: integer, default input size.
+    :param arch: string, model architect
     :param dropout_rate: float, dropout rate
     :param depth_divisor: int.
     :param model_name: string, model name.
@@ -288,7 +292,16 @@ def EfficientNetV2(blocks_args,
 
     model = models.Model(inputs, x, name=model_name)
 
-    if weights:
+    if weights in ['imagenet', 'imagenet21k', 'imagenet21k-ft1k']:
+        file_name = WEIGHTS_MAP[arch][weights]
+        weight_path = keras_utils.get_file(
+            file_name,
+            IMAGENET_WEIGHTS_URL + file_name,
+            cache_subdir='models'
+        )
+        model.load_weights(weight_path)
+
+    elif weights:
         model.load_weights(weights)
     return model
 
@@ -302,7 +315,7 @@ def EfficientNetV2_Base(include_top=True,
                         ):
     return EfficientNetV2(
         V2_BASE_BLOCKS_ARGS,
-        1., 1., 300,
+        1., 1., 300, 'efficientnetv2_base',
         dropout_rate=0.2,
         model_name='efficientnetv2_base',
         include_top=include_top,
@@ -323,7 +336,7 @@ def EfficientNetV2_S(include_top=True,
                      ):
     return EfficientNetV2(
         V2_S_BLOCKS_ARGS,
-        1., 1., 300,
+        1., 1., 300, 'efficientnetv2_s',
         dropout_rate=0.2,
         model_name='efficientnetv2_s',
         include_top=include_top,
@@ -344,7 +357,7 @@ def EfficientNetV2_M(include_top=True,
                      ):
     return EfficientNetV2(
         V2_M_BLOCKS_ARGS,
-        1., 1., 384,
+        1., 1., 384, 'efficientnetv2_m',
         dropout_rate=0.2,
         model_name='efficientnetv2_m',
         include_top=include_top,
@@ -365,7 +378,7 @@ def EfficientNetV2_L(include_top=True,
                      ):
     return EfficientNetV2(
         V2_L_BLOCKS_ARGS,
-        1., 1., 384,
+        1., 1., 384, 'efficientnetv2_l',
         dropout_rate=0.4,
         model_name='efficientnetv2_l',
         include_top=include_top,
@@ -386,7 +399,7 @@ def EfficientNetV2_XL(include_top=True,
                       ):
     return EfficientNetV2(
         V2_XL_BLOCKS_ARGS,
-        1., 1., 384,
+        1., 1., 384, 'efficientnetv2_xl',
         dropout_rate=0.4,
         model_name='efficientnetv2_xl',
         include_top=include_top,
