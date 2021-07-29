@@ -292,7 +292,7 @@ def EfficientNetV2(blocks_args,
     model = models.Model(inputs, x, name=model_name)
 
     if weights in ['imagenet', 'imagenet21k', 'imagenet21k-ft1k']:
-        file_name = WEIGHTS_MAP[arch][weights]
+        file_name = WEIGHTS_MAP[arch][weights][include_top]
         weight_path = keras_utils.get_file(
             file_name,
             IMAGENET_WEIGHTS_URL + file_name,
