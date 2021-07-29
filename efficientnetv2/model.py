@@ -279,7 +279,6 @@ def EfficientNetV2(blocks_args,
         if final_drop_rate and final_drop_rate > 0:
             x = layers.Dropout(final_drop_rate, name='head_dropout')(x)
         x = layers.Dense(classes,
-                         activation='softmax',
                          kernel_initializer=DENSE_KERNEL_INITIALIZER,
                          name='probs')(x)
     else:
