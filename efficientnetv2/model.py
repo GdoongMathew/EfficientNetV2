@@ -181,7 +181,7 @@ def EfficientNetV2(blocks_args,
 
     assert isinstance(blocks_args, list) and False not in [isinstance(block_args, BlockArgs) for block_args in
                                                            blocks_args]
-    assert pooling in ['avg', 'max']
+    assert pooling in ['avg', 'max', None]
 
     input_shape = (default_resolution, default_resolution, 3) if input_shape is None else input_shape
 
